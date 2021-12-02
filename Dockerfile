@@ -12,5 +12,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 WORKDIR /watcher
 RUN yarn
+RUN npm config set cache /.npm --global
 
 CMD [ "node", "." ]
