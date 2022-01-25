@@ -3,10 +3,15 @@ LABEL maintainer="develop@mizucoffee.net"
 
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
   apt-get update && \
-  apt-get install -y build-essential git nodejs python libssl-dev zlib1g-dev curl nano libpq-dev gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils libgdm-dev && \
+  apt-get install -y build-essential git nodejs python libssl-dev zlib1g-dev curl nano libpq-dev && \
   npm install -g yarn && \
   rm /etc/nginx/conf.d/default.conf && \
   git clone https://github.com/rbenv/rbenv.git /root/.rbenv
+
+RUN sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+  curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+  apt-get update && \
+  apt-get install -y google-chrome-stable
 
 ENV PATH=/root/.rbenv/shims:/root/.rbenv/bin:/usr/local/sbin:$PATH
 
