@@ -1,5 +1,5 @@
 const express = require("express");
-const { exec, execSync } = require("child_process");
+const { exec, execSync, spawn } = require("child_process");
 
 const app = express();
 
@@ -22,27 +22,25 @@ const branch = process.env.GITHUB_BRANCH || execSync('git symbolic-ref --short H
 
 if(process.env.GITHUB_BRANCH) execSync(`git checkout ${process.env.GITHUB_BRANCH}`, {cwd: "/website", env: {...process.env}})
 if(process.env.PRE_COMMAND) execSync(`${process.env.PRE_COMMAND}`, {cwd: "/website", env: {...process.env}})
-ps = exec(`${process.env.START_COMMAND}`, { env: {PORT: 3000}, detached: true, cwd: "/website" , env: {...process.env}}, (err, stdout, stderr) => {
-  if (err) {
-    console.error(err);
-    return;
-  }
-  console.log(stdout);
-  console.error(stderr);
-});
+const commandArgs = `${process.env.START_COMMAND}`.split(' ')
+const command = commandArgs.shift()
+ps = spawn(command, commandArgs, { env: {PORT: 3000}, detached: true, cwd: "/website" , env: {...process.env}})
+ps.stdout.setEncoding("utf-8")
+ps.stderr.setEncoding("utf-8")
+ps.stdout.on("data", data => console.log(data.trim()))
+ps.stderr.on("data", data => console.log(data.trim()))
+ps.on('exit', code => console.log("Finished: " + code))
 
 async function update() {
   process.kill(-ps.pid, 'SIGINT')
   execSync(`git fetch && git reset --hard origin/$(git symbolic-ref --short HEAD)`, {cwd: "/website", env: {...process.env}})
   if(process.env.PRE_COMMAND) execSync(`${process.env.PRE_COMMAND}`, {cwd: "/website", env: {...process.env}})
-  ps = exec(`${process.env.START_CMD}`, {env: {PORT: 3000}, detached: true, cwd: "/website", env: {...process.env}}, (err, stdout, stderr) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log(stdout);
-    console.error(stderr);
-  });
+  ps = spawn(command, commandArgs, { env: {PORT: 3000}, detached: true, cwd: "/website" , env: {...process.env}})
+  ps.stdout.setEncoding("utf-8")
+  ps.stderr.setEncoding("utf-8")
+  ps.stdout.on("data", data => console.log(data.trim()))
+  ps.stderr.on("data", data => console.log(data.trim()))
+  ps.on('exit', code => console.log("Finished: " + code))
 }
 
 app.get("/", (req, res) => {
